@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useOrder } from "../store/orderStore";
 import { generateComboName } from "../utils/comboName";
 import { saveRecord } from "../utils/records";
+import Toast from "../components/Toast/Toast";
 import styles from "./ResultScreen.module.css";
 
 const SPICE_EMOJI = ["🤍", "🌶️", "🌶️🌶️", "🌶️🌶️🌶️"];
@@ -135,6 +136,9 @@ export default function ResultScreen({ onRestart, onRecords }) {
   const cardRef = useRef(null);
   const comboName = useRef(generateComboName(state)).current;
   const [saved, setSaved] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = useCallback((msg) => setToast(msg), []);
 
   const shareText = [
     `✦ ${comboName}`,
@@ -168,13 +172,13 @@ export default function ResultScreen({ onRestart, onRecords }) {
           });
         } else {
           await navigator.clipboard.writeText(shareText);
-          alert("조합이 클립보드에 복사됐어! 붙여넣기 해봐 ✦");
+          showToast("클립보드에 복사됐어! 붙여넣기 해봐 ✦");
         }
       }, "image/png");
     } catch (e) {
       if (e.name !== "AbortError") {
         await navigator.clipboard.writeText(shareText);
-        alert("조합이 클립보드에 복사됐어! 붙여넣기 해봐 ✦");
+        showToast("클립보드에 복사됐어! 붙여넣기 해봐 ✦");
       }
     }
   };
@@ -191,6 +195,7 @@ export default function ResultScreen({ onRestart, onRecords }) {
 
   return (
     <div className={styles.container}>
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
       <div className={styles.scrollArea}>
         {/* 공유 카드 */}
         <div className={styles.card} ref={cardRef}>
